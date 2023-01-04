@@ -2,34 +2,38 @@ import {StatusBar} from 'expo-status-bar';
 import {FlatList, SafeAreaView, StyleSheet, Text, TouchableOpacity, View} from 'react-native';
 import dayjs from "dayjs";
 import {getCalendarColumns, getDayColor, getDayText} from "./util";
-import {useEffect} from "react";
+import {useEffect, useState} from "react";
 import Margin from "./Margin";
 import { SimpleLineIcons } from "@expo/vector-icons"
 
 
 const columnSize = 35
-const Column = ({text, color, opacity}) => {
+const Column = ({text, color, opacity, disabled, onPress, isSelected}) => {
     return (
-        <View
+        <TouchableOpacity
+            disabled={disabled}
+            onPress={onPress}
             style={{
                 width: columnSize,
                 height: columnSize,
                 justifyContent: "center",
-                alignItems: "center"
+                alignItems: "center",
+                backgroundColor: isSelected ? "#c2c2c2" : "transparent",
+                borderRadius: columnSize / 2
             }}
         >
             <Text style={{color, opacity}}>{text}</Text>
-        </View>
+        </TouchableOpacity>
     )
 }
 export default function App() {
-    const now = dayjs("2022-11-03")
+    const now = dayjs()
+    const [selectedDate, setSelectedDate] = useState(now)
+    const columns = getCalendarColumns(selectedDate)
 
-    const columns = getCalendarColumns(now)
-    console.log(columns)
     useEffect(() => {
-
-    }, [])
+        console.log("changed selectedDate", dayjs(selectedDate).format("YYYY.MM.DD"))
+    }, [selectedDate])
 
     const ArrowButton = ({ onPress, iconName }) => {
         return (
@@ -40,7 +44,7 @@ export default function App() {
     }
     const ListHeaderComponent = () => {
         const days = [0, 1, 2, 3, 4, 5, 6]
-        const currentDateText = dayjs(now).format("YYYY.MM.DD")
+        const currentDateText = dayjs(selectedDate).format("YYYY.MM.DD")
 
         return (
             <View>
@@ -53,17 +57,18 @@ export default function App() {
 
                     <ArrowButton onPress={null} iconName="arrow-right" />
                 </View>
-
+                
                 <View style={{flexDirection: "row"}}>
                     {days.map(day => {
                         const dayText = getDayText(day)
                         const color = getDayColor(day)
                         return (
                             <Column
-                                key={day}
+                                key={`day-${day}`}
                                 text={dayText}
                                 opacity={1}
                                 color={color}
+                                disabled={true}
                             />
                         )
                     })}
@@ -77,13 +82,21 @@ export default function App() {
         const day = dayjs(date).get("day")
 
         const color = getDayColor(day)
-        const isCurrentMonth = dayjs(date).isSame(now, "month")
+        const isCurrentMonth = dayjs(date).isSame(selectedDate, "month")
+
+        const onPress = () => {
+            setSelectedDate(date)
+        }
+
+        const isSelected = dayjs(date).isSame(selectedDate, "date")
 
         return (
             <Column
                 text={dateText}
                 color={color}
                 opacity={isCurrentMonth ? 1 : 0.4}
+                onPress={onPress}
+                isSelected={isSelected}
             />
         )
     }
