@@ -1,11 +1,11 @@
 import {StatusBar} from 'expo-status-bar';
 import {FlatList, SafeAreaView, StyleSheet, Text, TouchableOpacity, View} from 'react-native';
 import dayjs from "dayjs";
-import {getCalendarColumns, getDayColor, getDayText} from "./util";
+import {getCalendarColumns, getDayColor, getDayText} from "./src/util";
 import {useEffect, useState} from "react";
-import Margin from "./Margin";
 import { SimpleLineIcons } from "@expo/vector-icons"
-
+import DateTimePickerModal from "react-native-modal-datetime-picker"
+import {useCalendar} from "./src/hook/use-calendar";
 
 const columnSize = 35
 const Column = ({text, color, opacity, disabled, onPress, isSelected}) => {
@@ -28,12 +28,17 @@ const Column = ({text, color, opacity, disabled, onPress, isSelected}) => {
 }
 export default function App() {
     const now = dayjs()
-    const [selectedDate, setSelectedDate] = useState(now)
     const columns = getCalendarColumns(selectedDate)
-
-    useEffect(() => {
-        console.log("changed selectedDate", dayjs(selectedDate).format("YYYY.MM.DD"))
-    }, [selectedDate])
+    const {
+        selectedDate,
+        setSelectedDate,
+        isDatePickerVisible,
+        showDatePicker,
+        hideDatePicker,
+        handleConfirm,
+        subtract1Month,
+        add1Month
+    } = useCalendar(now)
 
     const ArrowButton = ({ onPress, iconName }) => {
         return (
@@ -42,6 +47,11 @@ export default function App() {
             </TouchableOpacity>
         )
     }
+
+    const onPressLeftArrow = () => subtract1Month
+
+    const onPressRightArrow = () => add1Month
+
     const ListHeaderComponent = () => {
         const days = [0, 1, 2, 3, 4, 5, 6]
         const currentDateText = dayjs(selectedDate).format("YYYY.MM.DD")
@@ -49,13 +59,13 @@ export default function App() {
         return (
             <View>
                 <View style={{ justifyContent: "center", alignItems: "center", flexDirection: "row" }}>
-                    <ArrowButton onPress={null} iconName="arrow-left" />
+                    <ArrowButton onPress={onPressLeftArrow} iconName="arrow-left" />
 
-                    <TouchableOpacity>
+                    <TouchableOpacity onPress={showDatePicker}>
                         <Text style={{ fontSize: 20, color: "#404040" }}>{currentDateText}</Text>
                     </TouchableOpacity>
 
-                    <ArrowButton onPress={null} iconName="arrow-right" />
+                    <ArrowButton onPress={onPressRightArrow} iconName="arrow-right" />
                 </View>
                 
                 <View style={{flexDirection: "row"}}>
@@ -109,9 +119,15 @@ export default function App() {
                 numColumns={7}
                 renderItem={renderItem}
                 ListHeaderComponent={ListHeaderComponent}
-            >
-
-            </FlatList>
+             />
+            <DateTimePickerModal
+                isVisible={isDatePickerVisible}
+                mode="date"
+                onConfirm={handleConfirm}
+                onCancel={hideDatePicker}
+                confirmTextIOS="선택"
+                cancelTextIOS="닫기"
+            />
             <StatusBar style="auto"/>
         </SafeAreaView>
     );
