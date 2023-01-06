@@ -1,5 +1,6 @@
 import {StatusBar} from 'expo-status-bar';
 import {
+    Alert,
     FlatList,
     Image, Keyboard,
     KeyboardAvoidingView, Platform, Pressable,
@@ -20,6 +21,7 @@ import {statusBarHeight, ITEM_WIDTH} from "./src/util";
 import {Ionicons} from "@expo/vector-icons"
 import Margin from "./src/Margin";
 import AddTodoInput from "./src/AddTodoInput";
+import {useRef} from "react";
 
 
 
@@ -38,21 +40,40 @@ export default function App() {
     } = useCalendar(now)
     const columns = getCalendarColumns(selectedDate)
     const {
-        todoList,
+        filteredTodoList,
         addTodo,
         removeTodo,
         toggleTodo,
         input,
-        setInput
+        setInput,
+        resetInput
     } = useTodoList(selectedDate)
+    const flatListRef = useRef(null)
 
-
+    const scrollToEnd = () => {
+        setTimeout(() => {
+            flatListRef.current?.scrollToEnd()
+        }, 200)
+    }
 
     const onPressLeftArrow = subtract1Month
 
     const onPressRightArrow = add1Month
     const onPressDate = setSelectedDate
-    const onPressAdd = () => {}
+    const onPressAdd = () => {
+        addTodo()
+        resetInput()
+        scrollToEnd()
+    }
+    const onSubmitEditing = () => {
+        addTodo()
+        resetInput()
+        scrollToEnd()
+    }
+
+    const onFocus = () => {
+        scrollToEnd()
+    }
 
     const ListHeaderComponent = () => {
         return(
@@ -84,9 +105,24 @@ export default function App() {
 
     const renderItem = ({ item: todo }) => {
         const isSuccess = todo.isSuccess
+        const onPress = () => toggleTodo(todo.id)
+        const onLongPress = () => {
+            Alert.alert("삭제하시겠어요?", "", [
+                {
+                    style: "cancel",
+                    text: "아니요"
+                },
+                {
+                    text: "네",
+                    onPress: () => removeTodo(todo.id)
+                }
+            ])
+        }
 
         return (
-            <View
+            <Pressable
+                onLongPress={onLongPress}
+                onPress={onPress}
                 style={{
                     width: ITEM_WIDTH,
                     // backgroundColor: todo.id % 2 === 0 ? "pink" : "lightblue",
@@ -111,7 +147,7 @@ export default function App() {
                     size={17}
                     color={isSuccess ? "#595959" : "#bfbfbf"}
                 />
-            </View>
+            </Pressable>
         )
     }
 
@@ -135,7 +171,9 @@ export default function App() {
             >
                 <View>
                     <FlatList
-                        data={todoList}
+                        showsVerticalScrollIndicator={false}
+                        ref={flatListRef}
+                        data={filteredTodoList}
                         ListHeaderComponent={ListHeaderComponent}
                         renderItem={renderItem}
                     />
@@ -145,6 +183,8 @@ export default function App() {
                         onChangeText={setInput}
                         placeholder={`${dayjs(selectedDate).format("M월 D일")}에 추가할 투두`}
                         onPressAdd={onPressAdd}
+                        onSubmitEditing={onSubmitEditing}
+                        onFocus={onFocus}
                     />
                 </View>
             </KeyboardAvoidingView>

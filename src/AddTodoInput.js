@@ -2,7 +2,7 @@ import {TextInput, TouchableOpacity, View} from "react-native";
 import {ITEM_WIDTH} from "./util";
 import {AntDesign} from "@expo/vector-icons"
 
-export default ({value, onChangeText, placeholder, onPressAdd}) => {
+export default ({value, onChangeText, placeholder, onPressAdd, onSubmitEditing, onFocus}) => {
     return (
         <View
             style={{
@@ -13,6 +13,9 @@ export default ({value, onChangeText, placeholder, onPressAdd}) => {
             }}
         >
             <TextInput
+                onFocus={onFocus}
+                blurOnSubmit={false}
+                onSubmitEditing={onSubmitEditing}
                 placeholder={placeholder}
                 value={value}
                 onChangeText={onChangeText}

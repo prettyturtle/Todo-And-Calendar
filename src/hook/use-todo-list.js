@@ -1,29 +1,8 @@
 import {useState} from "react";
 import dayjs from "dayjs";
 
-const defaultTodoList = [
-    {
-        id: 1,
-        content: "운동하기",
-        date: dayjs(),
-        isSuccess: true
-    },
-    {
-        id: 2,
-        content: "공부하기",
-        date: dayjs(),
-        isSuccess: false
-    },
-    {
-        id: 3,
-        content: "RN 강의 수강하기",
-        date: dayjs(),
-        isSuccess: true
-    },
-]
-
 export const useTodoList = (selectedDate) => {
-    const [todoList, setTodoList] = useState(defaultTodoList)
+    const [todoList, setTodoList] = useState([])
     const [input, setInput] = useState("")
     const addTodo = (todo) => {
         const length = todoList.length
@@ -55,12 +34,20 @@ export const useTodoList = (selectedDate) => {
         setTodoList(newTodoList)
     }
 
+    const resetInput = () => setInput("")
+
+    const filteredTodoList = todoList.filter(todo => {
+        const isSameDate = dayjs(todo.date).isSame(selectedDate, "date")
+        return isSameDate
+    })
+
     return {
-        todoList,
+        filteredTodoList,
         addTodo,
         removeTodo,
         toggleTodo,
         input,
-        setInput
+        setInput,
+        resetInput
     }
 }
