@@ -1,9 +1,20 @@
-import {useState} from "react";
+import {useEffect, useState} from "react";
 import dayjs from "dayjs";
+import AsyncStorage from '@react-native-async-storage/async-storage';
+
+const TODO_LIST_KEY = "TODO_LIST_KEY"
 
 export const useTodoList = (selectedDate) => {
     const [todoList, setTodoList] = useState([])
     const [input, setInput] = useState("")
+
+    const saveTodoList = (newTodoList) => {
+        setTodoList(newTodoList)
+        const newTodoListString = JSON.stringify(newTodoList)
+
+        AsyncStorage.setItem(TODO_LIST_KEY, newTodoListString)
+    }
+
     const addTodo = (todo) => {
         const length = todoList.length
         const lastID = length === 0 ? 0 : todoList[length - 1].id
@@ -15,12 +26,12 @@ export const useTodoList = (selectedDate) => {
                 isSuccess: false
             }
         ]
-        setTodoList(newTodoList)
+        saveTodoList(newTodoList)
     }
 
     const removeTodo = (todoID) => {
         const newTodoList = todoList.filter(todo => (todo.id !== todoID))
-        setTodoList(newTodoList)
+        saveTodoList(newTodoList)
     }
 
     const toggleTodo = (todoID) => {
@@ -31,7 +42,7 @@ export const useTodoList = (selectedDate) => {
                 isSuccess: !todo.isSuccess
             }
         })
-        setTodoList(newTodoList)
+        saveTodoList(newTodoList)
     }
 
     const resetInput = () => setInput("")
@@ -41,7 +52,18 @@ export const useTodoList = (selectedDate) => {
         return isSameDate
     })
 
+    const init = async () => {
+        const newTodoListString = await AsyncStorage.getItem(TODO_LIST_KEY)
+        const newTodoList = JSON.parse(newTodoListString)
+        setTodoList(newTodoList)
+    }
+
+    useEffect(() => {
+        init()
+    }, [])
+
     return {
+        todoList,
         filteredTodoList,
         addTodo,
         removeTodo,

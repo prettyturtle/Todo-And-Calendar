@@ -40,6 +40,7 @@ export default function App() {
     } = useCalendar(now)
     const columns = getCalendarColumns(selectedDate)
     const {
+        todoList,
         filteredTodoList,
         addTodo,
         removeTodo,
@@ -87,6 +88,7 @@ export default function App() {
                     onPressRightArrow={onPressRightArrow}
                     onPressHeaderDate={showDatePicker}
                     onPressDate={onPressDate}
+                    todoList={todoList}
                 />
                 <Margin height={15} />
                 <View

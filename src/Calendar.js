@@ -11,7 +11,8 @@ export default ({
                     onPressLeftArrow,
                     onPressHeaderDate,
                     onPressRightArrow,
-                    onPressDate
+                    onPressDate,
+                    todoList
                 }) => {
 
     const ArrowButton = ({ onPress, iconName }) => {
@@ -65,6 +66,7 @@ export default ({
         const onPress = () => onPressDate(date)
 
         const isSelected = dayjs(date).isSame(selectedDate, "date")
+        const hasTodo = todoList.find(todo => dayjs(todo.date).isSame(dayjs(date), "date"))
 
         return (
             <Column
@@ -73,10 +75,11 @@ export default ({
                 opacity={isCurrentMonth ? 1 : 0.4}
                 onPress={onPress}
                 isSelected={isSelected}
+                hasTodo={hasTodo}
             />
         )
     }
-    const Column = ({text, color, opacity, disabled, onPress, isSelected}) => {
+    const Column = ({text, color, opacity, disabled, onPress, isSelected, hasTodo}) => {
         return (
             <TouchableOpacity
                 disabled={disabled}
@@ -90,7 +93,7 @@ export default ({
                     borderRadius: columnSize / 2
                 }}
             >
-                <Text style={{color, opacity}}>{text}</Text>
+                <Text style={{color, opacity, fontWeight: hasTodo ? "bold" : "normal"}}>{text}</Text>
             </TouchableOpacity>
         )
     }
